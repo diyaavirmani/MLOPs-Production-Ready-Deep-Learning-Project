@@ -45,5 +45,41 @@ class DataIngestion:
         os.makedirs(unzip_path, exist_ok=True)
         with zipfile.ZipFile(self.config.local_data_file, 'r') as zip_ref:
             zip_ref.extractall(unzip_path)
+        
+        # Self-correction: Handle data reorganization for Keras flow_from_directory
+        import pandas as pd
+        import shutil
+
+        def reorganize_split(split):
+            base_dir = os.path.join(unzip_path, split)
+            csv_path = os.path.join(base_dir, "_classes.csv")
+            
+            if not os.path.exists(csv_path):
+                return
+
+            df = pd.read_csv(csv_path)
+            df.columns = [c.strip() for c in df.columns]
+            
+            for _, row in df.iterrows():
+                filename = row['filename']
+                src_path = os.path.join(base_dir, filename)
+                
+                if not os.path.exists(src_path):
+                    continue
+                    
+                if row['normal'] == 1:
+                    class_folder = "normal"
+                else:
+                    class_folder = "cancer"
+                    
+                dest_dir = os.path.join(base_dir, class_folder)
+                os.makedirs(dest_dir, exist_ok=True)
+                
+                shutil.move(src_path, os.path.join(dest_dir, filename))
+
+        for split in ["train", "valid", "test"]:
+            reorganize_split(split)
+        
+        logger.info(f"Extracted and reorganized data in {unzip_path}")
 
         

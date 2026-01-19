@@ -6,3 +6,12 @@ data_ingestion:
   source_URL: https://drive.google.com/file/d/12pIdF8Lk6i_qLUxw07_9is_6t57P4iEX/view?usp=drive_link
   local_data_file: artifacts/data_ingestion/dataset.zip
   unzip_dir: artifacts/data_ingestion
+
+prepare_base_model:
+  root_dir: artifacts/prepare_base_model #downloading the v16 model
+  base_model_path: artifacts/prepare_base_model/base_model.h5
+  updated_base_model_path: artifacts/prepare_base_model/base_model_updated.h5 #adding our own custom layer
+
+training:
+  root_dir: artifacts/training
+  trained_model_path: artifacts/training/model.h5
