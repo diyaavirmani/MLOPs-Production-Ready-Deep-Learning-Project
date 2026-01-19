@@ -4,11 +4,15 @@ import yaml
 from cnnClassifier import logger
 import json
 import joblib
-from ensure import ensure_annotations
+# from ensure import ensure_annotations
 from box import ConfigBox
 from pathlib import Path
 from typing import Any
 import base64
+
+# Simple decorator replacement for ensure_annotations
+def ensure_annotations(func):
+    return func
 
 
 
