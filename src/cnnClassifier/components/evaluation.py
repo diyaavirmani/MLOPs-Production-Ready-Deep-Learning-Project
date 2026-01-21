@@ -1,5 +1,6 @@
 import tensorflow as tf
 from pathlib import Path
+import os
 from cnnClassifier.entity.config_entity import EvaluationConfig
 from cnnClassifier.utils.common import save_json
 import mlflow
@@ -19,8 +20,7 @@ class Evaluation:
     def _valid_generator(self):
 
         datagenerator_kwargs = dict(
-            rescale = 1./255,
-            validation_split=0.30
+            rescale = 1./255
         )
 
         dataflow_kwargs = dict(
@@ -34,8 +34,7 @@ class Evaluation:
         )
 
         self.valid_generator = valid_datagenerator.flow_from_directory(
-            directory=self.config.training_data,
-            subset="validation",
+            directory=os.path.join(self.config.training_data, "test"),
             shuffle=False,
             **dataflow_kwargs
         )
@@ -43,11 +42,16 @@ class Evaluation:
     
     @staticmethod
     def load_model(path: Path) -> tf.keras.Model:
-        return tf.keras.models.load_model(path)
+        return tf.keras.models.load_model(path, compile=False)
     
 
     def evaluation(self):
         self.model = self.load_model(self.config.path_of_model)
+        # Re-compile to avoid Keras 3 issues during evaluation
+        self.model.compile(
+            loss=tf.keras.losses.CategoricalCrossentropy(),
+            metrics=["accuracy"]
+        )
         self._valid_generator()
         self.score = self.model.evaluate(self.valid_generator)
 

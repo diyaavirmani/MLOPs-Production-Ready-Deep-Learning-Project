@@ -1,0 +1,79 @@
+schema: '2.0'
+stages:
+  data_ingestion:
+    cmd: python src/cnnClassifier/pipeline/stage_01_di.py
+    deps:
+    - path: config/config.yaml
+      hash: md5
+      md5: 75e6a92ce9cb6d0e639f048e58c55cbc
+      size: 640
+    - path: src/cnnClassifier/pipeline/stage_01_di.py
+      hash: md5
+      md5: 7427496fc6f7be2a87efbb889b4e7d7f
+      size: 908
+    outs:
+    - path: artifacts/data_ingestion/dataset.zip
+      hash: md5
+      md5: 2d55d8e4ac99b2a799967f03e66b6888
+      size: 6431026
+  prepare_base_model:
+    cmd: python src/cnnClassifier/pipeline/stage_02_preparebasemodel.py
+    deps:
+    - path: config/config.yaml
+      hash: md5
+      md5: 75e6a92ce9cb6d0e639f048e58c55cbc
+      size: 640
+    - path: src/cnnClassifier/pipeline/stage_02_preparebasemodel.py
+      hash: md5
+      md5: e9f3361247e9420e64a9b38b563db746
+      size: 993
+    params:
+      params.yaml:
+        CLASSES: 2
+        IMAGE_SIZE:
+        - 224
+        - 224
+        - 3
+        INCLUDE_TOP: false
+        LEARNING_RATE: 0.01
+        WEIGHTS: imagenet
+    outs:
+    - path: artifacts/prepare_base_model
+      hash: md5
+      md5: 458ad917f60529d60dfd0d2992257717.dir
+      size: 118054560
+      nfiles: 2
+  training:
+    cmd: python src/cnnClassifier/pipeline/stage_03_modeltrainer.py
+    deps:
+    - path: artifacts/data_ingestion/dataset.zip
+      hash: md5
+      md5: 2d55d8e4ac99b2a799967f03e66b6888
+      size: 6431026
+    - path: artifacts/prepare_base_model
+      hash: md5
+      md5: 458ad917f60529d60dfd0d2992257717.dir
+      size: 118054560
+      nfiles: 2
+    - path: config/config.yaml
+      hash: md5
+      md5: 75e6a92ce9cb6d0e639f048e58c55cbc
+      size: 640
+    - path: src/cnnClassifier/pipeline/stage_03_modeltrainer.py
+      hash: md5
+      md5: 5e33c7caa222257dbaff480c953e8b5d
+      size: 928
+    params:
+      params.yaml:
+        AUGMENTATION: true
+        BATCH_SIZE: 16
+        EPOCHS: 95
+        IMAGE_SIZE:
+        - 224
+        - 224
+        - 3
+    outs:
+    - path: artifacts/training/model.h5
+      hash: md5
+      md5: effe916e6d4e9c87dfb669ca8cda5bcd
+      size: 59338512
